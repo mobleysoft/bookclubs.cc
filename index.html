@@ -1,221 +1,2489 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOOKCLUBS.CC | Sovereign Operations</title>
-    <style>
-        :root {
-            --bg-dark: #050505;
-            --accent-glow: rgba(0, 255, 204, 0.15);
-            --glass-bg: rgba(20, 20, 20, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --text-primary: #f0f0f0;
-            --text-muted: #888;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden;
-            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000 100%);
-        }
-        /* WebGL Container Layer */
-        #canvas-container {
-            position: absolute;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 0;
-        }
-        /* Somatic UI Layer (Glassmorphism) */
-        .glass-panel {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            max-width: 800px;
-            padding: 40px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-            z-index: 10;
-            animation: emerge 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
-        @keyframes emerge {
-            0% { opacity: 0; transform: translate(-50%, -45%) scale(0.95); filter: blur(10px); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
-        }
-        h1 {
-            font-size: 3rem;
-            letter-spacing: -0.05em;
-            margin: 0 0 10px 0;
-            background: linear-gradient(180deg, #fff 0%, #aaa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .metrics {
-            display: flex;
-            gap: 20px;
-            margin-top: 30px;
-        }
-        .metric-card {
-            flex: 1;
-            padding: 20px;
-            background: rgba(0,0,0,0.4);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.03);
-            transition: all 0.3s ease;
-        }
-        .metric-card:hover {
-            background: rgba(255,255,255,0.03);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px var(--accent-glow);
-        }
-        .metric-value { font-size: 2rem; font-weight: 600; color: #00ffcc; }
-        .metric-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-top: 5px; }
-        
-        /* Micro-interactions */
-        .status-dot {
-            display: inline-block; width: 8px; height: 8px;
-            background: #00ffcc; border-radius: 50%;
-            margin-right: 10px;
-            box-shadow: 0 0 10px #00ffcc;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.5; box-shadow: 0 0 5px #00ffcc; }
-            50% { opacity: 1; box-shadow: 0 0 15px #00ffcc, 0 0 30px #00ffcc; }
-            100% { opacity: 0.5; box-shadow: 0 0 5px #00ffcc; }
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta property="og:title" content="BookClubs — Your AI-Powered Book Club Companion">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://bookclubs.cc">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BookClubs — Your AI-Powered Book Club Companion</title>
+<style>
+/* ═══════════════════════════════════════════
+   CSS RESET & BASE
+   ═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <!-- MASCOM_ANALYTICS_CORTEX -->
-    <script>
-        (function() {
-            try {
-                const payload = {
-                    node: "bookclubs.cc",
-                    timestamp: new Date().toISOString(),
-                    vector: window.location.pathname,
-                    agent: navigator.userAgent
-                };
-                navigator.sendBeacon("http://127.0.0.1:8889/track", JSON.stringify(payload));
-            } catch(e) {}
-        })();
-    </script>
-    
+:root {
+  --cream: #fdf6e3;
+  --cream-dark: #f5edd6;
+  --brown: #5c3d2e;
+  --brown-light: #7a5a4a;
+  --brown-dark: #3e2518;
+  --green: #2d5016;
+  --green-light: #4a7a2e;
+  --burgundy: #8b1a1a;
+  --burgundy-light: #a83232;
+  --gold: #c8a951;
+  --gold-light: #e8d48b;
+  --text: #2c1810;
+  --text-light: #6b5445;
+  --shadow: rgba(60, 30, 15, 0.12);
+  --shadow-dark: rgba(60, 30, 15, 0.25);
+  --radius: 8px;
+  --radius-lg: 14px;
+  --transition: 0.25s ease;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════════ */
+h1, h2, h3, h4 { font-family: Georgia, serif; font-weight: 700; line-height: 1.25; color: var(--brown-dark); }
+h1 { font-size: 1.75rem; }
+h2 { font-size: 1.4rem; margin-bottom: 0.6rem; }
+h3 { font-size: 1.15rem; margin-bottom: 0.4rem; }
+p { margin-bottom: 0.5rem; }
+
+.ui-text, button, input, select, textarea, label, .nav-label, .tab-label {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+a { color: var(--burgundy); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════ */
+.app-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════ */
+.app-header {
+  background: linear-gradient(135deg, var(--brown-dark) 0%, var(--brown) 60%, var(--brown-light) 100%);
+  color: var(--cream);
+  padding: 1.2rem 1rem 1rem;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 3px 12px var(--shadow-dark);
+}
+
+.app-header h1 {
+  color: var(--cream);
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.app-header .subtitle {
+  font-size: 0.78rem;
+  opacity: 0.8;
+  margin-top: 0.2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
+}
+
+.book-icon { font-size: 1.6rem; }
+
+/* ═══════════════════════════════════════════
+   BOTTOM NAVIGATION (Mobile-first)
+   ═══════════════════════════════════════════ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--brown-dark);
+  display: flex;
+  justify-content: space-around;
+  padding: 0.4rem 0 calc(0.4rem + env(safe-area-inset-bottom, 0px));
+  z-index: 200;
+  box-shadow: 0 -3px 12px var(--shadow-dark);
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: rgba(253,246,227,0.55);
+  font-size: 1.2rem;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  transition: color var(--transition);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-btn .nav-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nav-btn.active, .nav-btn:hover { color: var(--gold-light); }
+.nav-btn.active { position: relative; }
+.nav-btn.active::after {
+  content: '';
+  position: absolute;
+  top: -0.4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  background: var(--gold);
+  border-radius: 0 0 3px 3px;
+}
+
+/* ═══════════════════════════════════════════
+   PAGE SECTIONS
+   ═══════════════════════════════════════════ */
+.page { display: none; padding: 1rem; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══════════════════════════════════════════
+   CARDS
+   ═══════════════════════════════════════════ */
+.card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px var(--shadow);
+  border: 1px solid rgba(92,61,46, 0.65);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.card-header .icon { font-size: 1.3rem; }
+
+/* ═══════════════════════════════════════════
+   FORMS
+   ═══════════════════════════════════════════ */
+.form-group { margin-bottom: 0.9rem; }
+.form-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--brown);
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+input[type="text"], input[type="number"], input[type="date"], input[type="email"],
+select, textarea {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px solid rgba(92,61,46, 0.65);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  background: #fff;
+  color: var(--text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  font-family: Georgia, serif;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(45,80,22, 0.65);
+}
+
+textarea { resize: vertical; min-height: 80px; }
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-primary {
+  background: var(--green);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(45,80,22, 0.65); }
+
+.btn-secondary {
+  background: var(--brown);
+  color: var(--cream);
+}
+.btn-secondary:hover { background: var(--brown-light); }
+
+.btn-accent {
+  background: var(--burgundy);
+  color: #fff;
+}
+.btn-accent:hover { background: var(--burgundy-light); }
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--brown);
+  color: var(--brown);
+}
+.btn-outline:hover { background: var(--brown); color: var(--cream); }
+
+.btn-small { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
+.btn-block { width: 100%; justify-content: center; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+/* ═══════════════════════════════════════════
+   BOOK LIBRARY GRID
+   ═══════════════════════════════════════════ */
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.book-card {
+  background: linear-gradient(145deg, var(--cream) 0%, #fff 100%);
+  border-radius: var(--radius);
+  padding: 0.7rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: 1.5px solid transparent;
+  text-align: center;
+}
+
+.book-card:hover {
+  border-color: var(--green);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.book-card.selected {
+  border-color: var(--green);
+  background: rgba(45,80,22, 0.65);
+}
+
+.book-spine {
+  width: 40px;
+  height: 58px;
+  margin: 0 auto 0.5rem;
+  border-radius: 2px 4px 4px 2px;
+  box-shadow: 2px 2px 4px var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.book-card .title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.15rem;
+  color: var(--brown-dark);
+}
+
+.book-card .author {
+  font-size: 0.65rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════════ */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--cream-dark);
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  transition: all var(--transition);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+.tab-btn:hover { color: var(--brown); }
+
+.tab-content { display: none; animation: fadeIn 0.25s ease; }
+.tab-content.active { display: block; }
+
+/* ═══════════════════════════════════════════
+   SCHEDULE
+   ═══════════════════════════════════════════ */
+.schedule-week {
+  display: flex;
+  align-items: stretch;
+  gap: 0.8rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.week-number {
+  background: var(--green);
+  color: #fff;
+  width: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  font-family: -apple-system, sans-serif;
+}
+
+.week-details { flex: 1; }
+.week-details .date {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  font-family: -apple-system, sans-serif;
+}
+.week-details .assignment {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--brown-dark);
+}
+
+/* ═══════════════════════════════════════════
+   CALENDAR VIEW
+   ═══════════════════════════════════════════ */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-top: 0.6rem;
+}
+
+.cal-header {
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-light);
+  padding: 0.3rem;
+  font-family: -apple-system, sans-serif;
+  text-transform: uppercase;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  border-radius: 4px;
+  background: #fff;
+  font-family: -apple-system, sans-serif;
+}
+
+.cal-day.empty { background: transparent; }
+.cal-day.meeting { background: var(--green); color: #fff; font-weight: 700; }
+.cal-day.reading { background: rgba(45,80,22, 0.65); }
+.cal-day .cal-num { font-weight: 600; }
+.cal-day .cal-label { font-size: 0.5rem; line-height: 1; }
+
+/* ═══════════════════════════════════════════
+   DISCUSSION BOARD
+   ═══════════════════════════════════════════ */
+.post {
+  border-left: 3px solid var(--green);
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.7rem;
+  background: rgba(253,246,227,0.5);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.post .post-author {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--brown);
+  font-family: -apple-system, sans-serif;
+}
+
+.post .post-time {
+  font-size: 0.65rem;
+  color: var(--text-light);
+  font-family: -apple-system, sans-serif;
+}
+
+.post .post-body { font-size: 0.9rem; margin-top: 0.3rem; }
+
+/* ═══════════════════════════════════════════
+   STARS RATING
+   ═══════════════════════════════════════════ */
+.stars { display: inline-flex; gap: 0.15rem; cursor: pointer; }
+.stars .star {
+  font-size: 1.4rem;
+  color: #ddd;
+  transition: color 0.15s;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.stars .star.filled { color: var(--gold); }
+.stars .star:hover { color: var(--gold-light); }
+
+/* ═══════════════════════════════════════════
+   MEMBER LIST
+   ═══════════════════════════════════════════ */
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.member-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  font-family: -apple-system, sans-serif;
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--cream-dark);
+  border-radius: 3px;
+  overflow: hidden;
+  flex: 1;
+  max-width: 100px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════
+   POLL
+   ═══════════════════════════════════════════ */
+.poll-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  margin-bottom: 0.4rem;
+  background: var(--cream);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.poll-option:hover { background: var(--cream-dark); }
+.poll-option .poll-bar-bg {
+  flex: 1;
+  height: 22px;
+  background: var(--cream-dark);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.poll-option .poll-bar-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  opacity: 0.7;
+}
+
+.poll-option .poll-pct {
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 36px;
+  text-align: right;
+  font-family: -apple-system, sans-serif;
+}
+
+/* ═══════════════════════════════════════════
+   PRICING TIERS
+   ═══════════════════════════════════════════ */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+@media (min-width: 640px) { .pricing-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.pricing-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 1.2rem;
+  text-align: center;
+  border: 2px solid var(--cream-dark);
+  transition: all var(--transition);
+  position: relative;
+}
+
+.pricing-card.featured {
+  border-color: var(--green);
+  box-shadow: 0 4px 16px rgba(45,80,22, 0.65);
+  transform: scale(1.02);
+}
+
+.pricing-card .badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-family: -apple-system, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pricing-card .price {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin: 0.4rem 0;
+}
+
+.pricing-card .price span { font-size: 0.85rem; color: var(--text-light); font-weight: 400; }
+
+.pricing-card ul {
+  list-style: none;
+  text-align: left;
+  margin: 0.8rem 0;
+  font-size: 0.82rem;
+}
+
+.pricing-card li {
+  padding: 0.3rem 0;
+  padding-left: 1.3rem;
+  position: relative;
+  font-family: -apple-system, sans-serif;
+}
+
+.pricing-card li::before {
+  content: '\2713';
+  position: absolute;
+  left: 0;
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════
+   AI CONTENT DISPLAY
+   ═══════════════════════════════════════════ */
+.ai-response {
+  background: linear-gradient(135deg, rgba(253,246,227,0.6) 0%, #fff 100%);
+  border: 1px solid rgba(92,61,46, 0.65);
+  border-left: 3px solid var(--burgundy);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 1rem;
+  margin-top: 0.8rem;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.ai-response h4 {
+  color: var(--burgundy);
+  margin-bottom: 0.4rem;
+}
+
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+/* ═══════════════════════════════════════════
+   ANNOTATIONS
+   ═══════════════════════════════════════════ */
+.annotation {
+  background: rgba(200,169,81, 0.65);
+  border-left: 3px solid var(--gold);
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.annotation .passage {
+  font-style: italic;
+  color: var(--brown);
+  font-size: 0.88rem;
+}
+
+.annotation .note {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 0.2rem;
+  font-family: -apple-system, sans-serif;
+}
+
+/* ═══════════════════════════════════════════
+   MEETING NOTES
+   ═══════════════════════════════════════════ */
+.meeting-note {
+  background: #fff;
+  border: 1px dashed rgba(92,61,46, 0.65);
+  border-radius: var(--radius);
+  padding: 0.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.meeting-note .meeting-date {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  font-family: -apple-system, sans-serif;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════
+   HISTORY LOG
+   ═══════════════════════════════════════════ */
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.history-item .finished-badge {
+  font-size: 0.6rem;
+  background: var(--green);
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 8px;
+  font-family: -apple-system, sans-serif;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════
+   UTILITY
+   ═══════════════════════════════════════════ */
+.text-center { text-align: center; }
+.mb-1 { margin-bottom: 0.6rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mt-1 { margin-top: 0.6rem; }
+.mt-2 { margin-top: 1rem; }
+.flex-row { display: flex; gap: 0.5rem; align-items: center; }
+.flex-wrap { flex-wrap: wrap; }
+.gap-sm { gap: 0.4rem; }
+.hidden { display: none !important; }
+.chip {
+  display: inline-block;
+  font-size: 0.68rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  font-family: -apple-system, sans-serif;
+  font-weight: 600;
+}
+.chip-green { background: rgba(45,80,22, 0.65); color: var(--green); }
+.chip-brown { background: rgba(92,61,46, 0.65); color: var(--brown); }
+.chip-burgundy { background: rgba(139,26,26, 0.65); color: var(--burgundy); }
+
+.divider {
+  height: 1px;
+  background: var(--cream-dark);
+  margin: 1rem 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-light);
+}
+
+.empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--brown-dark);
+  color: var(--cream);
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-family: -apple-system, sans-serif;
+  z-index: 300;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+
+.modal-overlay.show { opacity: 1; pointer-events: auto; }
+
+.modal {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: scale(0.95);
+  transition: transform 0.25s;
+}
+
+.modal-overlay.show .modal { transform: scale(1); }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media (min-width: 768px) {
+  .book-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  h1 { font-size: 2rem; }
+  .page { padding: 1.5rem 2rem; }
+}
+</style>
 </head>
 <body>
-    <div id="canvas-container"></div>
-    
-    <div class="glass-panel">
-        <div style="display: flex; align-items: center; margin-bottom: 20px;">
-            <div class="status-dot"></div>
-            <span style="color: var(--text-muted); font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase;">SOVEREIGN NODE ACTIVE</span>
+
+<!-- UNIVERSE: Creation — BookClubs @ scale 0.29 (helix) -->
+<canvas id="universe" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.min.js"}}</script>
+<script type="module">
+import*as THREE from'three';
+window.__MASCOM_ANIM_T=0;
+const cvs=document.getElementById('universe');
+const W=()=>window.innerWidth,H=()=>window.innerHeight;
+const renderer=new THREE.WebGLRenderer({canvas:cvs,antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(W(),H());
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.08;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x050510);
+scene.fog=new THREE.FogExp2(0x050510,0.012);
+
+const cam=new THREE.PerspectiveCamera(76,W()/H(),0.01,100);
+cam.position.set(0,0,7.4);
+
+// --- LIGHTING ---
+scene.add(new THREE.AmbientLight(0x050510,0.4));
+const pl1=new THREE.PointLight(0x88cc88,2.1,23);
+pl1.position.set(5.6,4.6,5.1);scene.add(pl1);
+const pl2=new THREE.PointLight(0xcc88ff,2.1,19);
+pl2.position.set(-5.6,-2.5,4.9);scene.add(pl2);
+const pl3=new THREE.PointLight(0xff4466,1.2,15);
+pl3.position.set(1.1,0.6,-4.6);scene.add(pl3);
+
+
+const helixPts=[];
+const hGeo=new THREE.SphereGeometry(0.113,8,6);
+const N_PAIRS=48;
+const RISE=0.35;
+const RADIUS=1.2;
+const TWIST=Math.PI/6;
+for(let s=0;s<3;s++){
+  const offset=s*Math.PI*2/3;
+  const c=[0x88cc88,0xcc88ff,0xff4466][s%3];
+  for(let i=0;i<N_PAIRS;i++){
+    const y=(i-N_PAIRS/2)*RISE;
+    const a=i*TWIST+offset;
+    const m=new THREE.Mesh(hGeo,new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:0.4,roughness:0.3,metalness:0.6}));
+    m.position.set(Math.cos(a)*RADIUS,y,Math.sin(a)*RADIUS);
+    m.userData={y,a,strand:s};
+    scene.add(m);helixPts.push(m);
+  }
+}
+// Cross-links
+for(let i=0;i<N_PAIRS;i+=3){
+  for(let s=0;s<2;s++){
+    const a=helixPts[s*N_PAIRS+i],b=helixPts[(s+1)*N_PAIRS+i];
+    if(a&&b){
+      const g=new THREE.BufferGeometry().setFromPoints([a.position,b.position]);
+      scene.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.1})));
+    }
+  }
+}
+
+const t0=performance.now();
+function animate(now){
+  const t=(now-t0)/1000;
+  window.__MASCOM_ANIM_T=t;
+  helixPts.forEach(h=>{
+    h.material.emissiveIntensity=0.3+0.2*Math.sin(t*3+h.userData.y*2);
+  });
+  // Camera
+  cam.position.x=7.4*Math.sin(t*0.157+4.03);
+  cam.position.z=7.4*Math.cos(t*0.157+4.03);
+  cam.position.y=1.4*Math.sin(t*0.110);
+  cam.lookAt(0,-0.4,0);
+  pl1.intensity=2.1+Math.sin(t*1.9)*0.5;
+  pl2.intensity=2.1+Math.sin(t*1.6+1)*0.4;
+  renderer.render(scene,cam);
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+window.addEventListener('resize',()=>{cam.aspect=W()/H();cam.updateProjectionMatrix();renderer.setSize(W(),H());});
+</script>
+<style id="mascom-overlay-css">
+/* Universe overlay pattern: content fades in on interaction, fades out on idle */
+#mascom-content-overlay {
+  position: relative; z-index: 10;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.8s ease;
+}
+#mascom-content-overlay.visible {
+  opacity: 1; pointer-events: auto;
+}
+/* Force transparent backgrounds so universe shows through */
+body { background: transparent !important; }
+#mascom-content-overlay,
+#mascom-content-overlay header,
+#mascom-content-overlay nav,
+#mascom-content-overlay main,
+#mascom-content-overlay section,
+#mascom-content-overlay footer,
+#mascom-content-overlay .hero,
+#mascom-content-overlay .hero-section,
+#mascom-content-overlay [class*="hero"],
+#mascom-content-overlay [class*="nav"],
+#mascom-content-overlay .container,
+#mascom-content-overlay .wrapper,
+#mascom-content-overlay .content,
+#mascom-content-overlay [class*="section"],
+#mascom-content-overlay [class*="banner"],
+#mascom-content-overlay [class*="header"],
+#mascom-content-overlay [class*="landing"],
+#mascom-content-overlay [class*="cta"] {
+  background-color: transparent !important;
+}
+/* Keep text readable with subtle text shadow */
+#mascom-content-overlay h1,
+#mascom-content-overlay h2,
+#mascom-content-overlay h3,
+#mascom-content-overlay p,
+#mascom-content-overlay span,
+#mascom-content-overlay a,
+#mascom-content-overlay li {
+  text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+}
+/* Mobile: always show content (no hover detection) */
+@media (max-width: 768px) {
+  #mascom-content-overlay {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    background: rgba(0,0,0,0.6) !important;
+  }
+}
+</style>
+<div id="mascom-content-overlay">
+
+
+
+
+<!-- ═══════════════════════════════════════════
+     APP HEADER
+     ═══════════════════════════════════════════ -->
+<header class="app-header">
+  <h1><span class="book-icon">&#128218;</span> BookClubs</h1>
+  <div class="subtitle">Your AI-Powered Book Club Companion</div>
+</header>
+
+<!-- ═══════════════════════════════════════════
+     MAIN CONTENT
+     ═══════════════════════════════════════════ -->
+<div class="app-container">
+
+  <!-- ════════ HOME / DISCOVER ════════ -->
+  <section id="page-home" class="page active">
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">&#128214;</span>
+        <h2>Start a New Book</h2>
+      </div>
+      <div class="form-group">
+        <label>Book Title</label>
+        <input type="text" id="bookTitle" placeholder="Enter a book title...">
+      </div>
+      <div class="form-group">
+        <label>Author</label>
+        <input type="text" id="bookAuthor" placeholder="Author name">
+      </div>
+      <div class="form-group">
+        <label>Synopsis / Description (optional)</label>
+        <textarea id="bookSynopsis" placeholder="Paste a book description or let AI generate one..."></textarea>
+      </div>
+      <div class="flex-row flex-wrap gap-sm mb-2">
+        <div class="form-group" style="flex:1;min-width:100px">
+          <label>Pages</label>
+          <input type="number" id="bookPages" placeholder="281" min="1">
         </div>
-        <h1>BOOKCLUBS.CC</h1>
-        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; max-width: 600px;">
-            Premium, enigmatic, hyper-modern. Physical environment protocol: cyber_grid.
-        </p>
-        
-        <div class="metrics">
-            <div class="metric-card">
-                <div class="metric-value">99.9%</div>
-                <div class="metric-label">Neural Coherence</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">0ms</div>
-                <div class="metric-label">API Latency</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">LOCAL</div>
-                <div class="metric-label">Execution Vector</div>
-            </div>
+        <div class="form-group" style="flex:1;min-width:100px">
+          <label>Chapters</label>
+          <input type="number" id="bookChapters" placeholder="24" min="1">
         </div>
+        <div class="form-group" style="flex:1;min-width:100px">
+          <label>Weeks</label>
+          <input type="number" id="bookWeeks" value="4" min="1" max="52">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="setupBook()">&#128218; Set Up This Book</button>
     </div>
 
-    <script>
-        // Evolved WebGL Matrix
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x050505, 0.002);
-        
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
-        
-        // Complex geometry generation instead of naked cubes
-        const geometry = new THREE.IcosahedronGeometry(10, 1);
-        const material = new THREE.MeshBasicMaterial({ 
-            color: 0x00ffcc, 
-            wireframe: true,
-            transparent: true,
-            opacity: 0.15
-        });
-        
-        const mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
-        
-        // Particles
-        const particlesGeometry = new THREE.BufferGeometry();
-        const particlesCount = 2000;
-        const posArray = new Float32Array(particlesCount * 3);
-        for(let i=0; i<particlesCount * 3; i++) {
-            posArray[i] = (Math.random() - 0.5) * 100;
-        }
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        const particlesMaterial = new THREE.PointsMaterial({
-            size: 0.05,
-            color: 0x00ffcc,
-            transparent: true,
-            opacity: 0.5
-        });
-        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particlesMesh);
-        
-        camera.position.z = 25;
-        
-        // Interactive Mouse Tracking
-        let mouseX = 0;
-        let mouseY = 0;
-        document.addEventListener('mousemove', (event) => {
-            mouseX = event.clientX / window.innerWidth - 0.5;
-            mouseY = event.clientY / window.innerHeight - 0.5;
-        });
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            mesh.rotation.x += 0.001;
-            mesh.rotation.y += 0.002;
-            
-            particlesMesh.rotation.y = -mouseX * 0.5;
-            particlesMesh.rotation.x = -mouseY * 0.5;
-            
-            renderer.render(scene, camera);
-        }
-        animate();
-        
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
-
-    <!-- MASCOM_INTERLINK -->
-    <div style="position: absolute; bottom: 20px; right: 40px; z-index: 100; font-family: monospace; font-size: 0.7rem; letter-spacing: 0.1em; display: flex; gap: 20px;">
-        <a href="blog.html" style="color: #00ffcc; text-decoration: none; text-shadow: 0 0 5px rgba(0,255,204,0.3); transition: color 0.2s;">INTELLIGENCE CORTEX</a>
-        
-        <a href="http://localhost:8888" style="color: #888; text-decoration: none; transition: color 0.2s;">SOVEREIGN GATEWAY</a>
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">&#128218;</span>
+        <h2>Popular Library</h2>
+      </div>
+      <p style="font-size:0.82rem;color:var(--text-light)" class="ui-text">Tap a book to auto-fill its details</p>
+      <div class="book-grid" id="libraryGrid"></div>
     </div>
-    
+  </section>
+
+  <!-- ════════ AI GUIDE ════════ -->
+  <section id="page-guide" class="page">
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">&#129302;</span>
+        <h2>AI Discussion Guide</h2>
+      </div>
+      <div id="guideBookInfo" class="mb-1" style="font-size:0.88rem;color:var(--text-light)">
+        Select a book first from the Home tab.
+      </div>
+      <div class="tabs" id="guideTabs">
+        <button class="tab-btn active" data-tab="guide-questions">Questions</button>
+        <button class="tab-btn" data-tab="guide-themes">Themes</button>
+        <button class="tab-btn" data-tab="guide-characters">Characters</button>
+        <button class="tab-btn" data-tab="guide-context">Context</button>
+        <button class="tab-btn" data-tab="guide-companion">Reads</button>
+        <button class="tab-btn" data-tab="guide-adaptations">Film</button>
+      </div>
+
+      <div id="guide-questions" class="tab-content active">
+        <button class="btn btn-accent btn-block mb-1" onclick="generateAI('questions')">&#10024; Generate Discussion Questions</button>
+        <div id="ai-questions" class="ai-response hidden"></div>
+      </div>
+      <div id="guide-themes" class="tab-content">
+        <button class="btn btn-accent btn-block mb-1" onclick="generateAI('themes')">&#10024; Analyze Themes</button>
+        <div id="ai-themes" class="ai-response hidden"></div>
+      </div>
+      <div id="guide-characters" class="tab-content">
+        <button class="btn btn-accent btn-block mb-1" onclick="generateAI('characters')">&#10024; Character Deep Dive</button>
+        <div id="ai-characters" class="ai-response hidden"></div>
+      </div>
+      <div id="guide-context" class="tab-content">
+        <button class="btn btn-accent btn-block mb-1" onclick="generateAI('context')">&#10024; Author &amp; Historical Context</button>
+        <div id="ai-context" class="ai-response hidden"></div>
+      </div>
+      <div id="guide-companion" class="tab-content">
+        <button class="btn btn-accent btn-block mb-1" onclick="generateAI('companion')">&#10024; Find Companion Reads</button>
+        <div id="ai-companion" class="ai-response hidden"></div>
+      </div>
+      <div id="guide-adaptations" class="tab-content">
+        <button class="btn btn-accent btn-block mb-1" onclick="generateAI('adaptations')">&#10024; Movie/TV Adaptations</button>
+        <div id="ai-adaptations" class="ai-response hidden"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ SCHEDULE ════════ -->
+  <section id="page-schedule" class="page">
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">&#128197;</span>
+        <h2>Reading Schedule</h2>
+      </div>
+      <div id="scheduleBookInfo" class="mb-1" style="font-size:0.88rem;color:var(--text-light)">
+        Set up a book first to generate a schedule.
+      </div>
+      <div class="flex-row flex-wrap gap-sm mb-1">
+        <div class="form-group" style="flex:1;min-width:120px">
+          <label>Meeting Day</label>
+          <select id="meetingDay">
+            <option value="0">Sunday</option>
+            <option value="1">Monday</option>
+            <option value="2">Tuesday</option>
+            <option value="3">Wednesday</option>
+            <option value="4" selected>Thursday</option>
+            <option value="5">Friday</option>
+            <option value="6">Saturday</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;min-width:120px">
+          <label>Start Date</label>
+          <input type="date" id="startDate">
+        </div>
+        <div class="form-group" style="flex:1;min-width:100px">
+          <label>Pace</label>
+          <select id="pace">
+            <option value="relaxed">Relaxed</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="intensive">Intensive</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex-row gap-sm mb-2">
+        <button class="btn btn-primary" onclick="generateSchedule()" style="flex:1">&#128197; Build Schedule</button>
+        <button class="btn btn-outline btn-small" onclick="toggleCalView()" id="calViewBtn">Calendar</button>
+        <button class="btn btn-outline btn-small" onclick="exportICS()">Export .ics</button>
+      </div>
+      <div id="scheduleList"></div>
+      <div id="calendarView" class="hidden"></div>
+    </div>
+  </section>
+
+  <!-- ════════ CLUBS ════════ -->
+  <section id="page-clubs" class="page">
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">&#128101;</span>
+        <h2>My Book Clubs</h2>
+      </div>
+      <button class="btn btn-primary btn-block mb-2" onclick="showCreateClubModal()">+ Create New Club</button>
+      <div id="clubsList"></div>
+    </div>
+
+    <div id="clubDetail" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <span class="icon">&#128214;</span>
+          <h2 id="clubDetailName">Club Name</h2>
+        </div>
+        <div class="tabs" id="clubTabs">
+          <button class="tab-btn active" data-tab="club-members">Members</button>
+          <button class="tab-btn" data-tab="club-notes">Notes</button>
+          <button class="tab-btn" data-tab="club-ratings">Ratings</button>
+          <button class="tab-btn" data-tab="club-history">History</button>
+        </div>
+
+        <div id="club-members" class="tab-content active">
+          <div class="flex-row mb-1">
+            <input type="text" id="newMemberName" placeholder="Add member name..." style="flex:1">
+            <button class="btn btn-small btn-primary" onclick="addMember()">Add</button>
+          </div>
+          <div id="membersList"></div>
+        </div>
+        <div id="club-notes" class="tab-content">
+          <div class="form-group">
+            <label>Meeting Date</label>
+            <input type="date" id="noteDate">
+          </div>
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="noteContent" placeholder="Meeting discussion notes..." rows="5"></textarea>
+          </div>
+          <button class="btn btn-primary btn-block mb-2" onclick="saveMeetingNote()">Save Note</button>
+          <div id="notesList"></div>
+        </div>
+        <div id="club-ratings" class="tab-content">
+          <div id="ratingsArea">
+            <div class="form-group">
+              <label>Rate the Current Book</label>
+              <div class="stars" id="ratingStars">
+                <button class="star" data-val="1">&#9733;</button>
+                <button class="star" data-val="2">&#9733;</button>
+                <button class="star" data-val="3">&#9733;</button>
+                <button class="star" data-val="4">&#9733;</button>
+                <button class="star" data-val="5">&#9733;</button>
+              </div>
+              <div id="currentRating" class="ui-text" style="font-size:0.8rem;color:var(--text-light);margin-top:0.3rem"></div>
+            </div>
+          </div>
+        </div>
+        <div id="club-history" class="tab-content">
+          <button class="btn btn-small btn-outline mb-1" onclick="markBookComplete()">Mark Current Book Complete</button>
+          <div id="historyList"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ SOCIAL ════════ -->
+  <section id="page-social" class="page">
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">&#128172;</span>
+        <h2>Discussion Board</h2>
+      </div>
+      <div id="socialBookInfo" class="mb-1" style="font-size:0.82rem;color:var(--text-light)" class="ui-text">
+        Discussions for your current book will appear here.
+      </div>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="postAuthor" placeholder="Your name" value="">
+      </div>
+      <div class="form-group">
+        <textarea id="postBody" placeholder="Share your thoughts, a favorite passage, or a question..." rows="3"></textarea>
+      </div>
+      <button class="btn btn-primary btn-block mb-2" onclick="addPost()">Post to Discussion</button>
+      <div id="postsList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">&#128221;</span>
+        <h2>Highlights &amp; Annotations</h2>
+      </div>
+      <div class="form-group">
+        <label>Passage</label>
+        <textarea id="annotPassage" placeholder="Paste a passage from the book..." rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Your Note</label>
+        <input type="text" id="annotNote" placeholder="Your thoughts on this passage...">
+      </div>
+      <button class="btn btn-outline btn-block mb-1" onclick="addAnnotation()">Save Annotation</button>
+      <div id="annotationsList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">&#128499;</span>
+        <h2>Vote: Next Book</h2>
+      </div>
+      <div class="form-group">
+        <label>Add a Book Option</label>
+        <div class="flex-row">
+          <input type="text" id="pollOption" placeholder="Book title..." style="flex:1">
+          <button class="btn btn-small btn-primary" onclick="addPollOption()">Add</button>
+        </div>
+      </div>
+      <div id="pollOptions"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">&#128279;</span>
+        <h2>Share Discussion Guide</h2>
+      </div>
+      <p style="font-size:0.85rem;" class="ui-text">Generate a shareable link for your current discussion guide.</p>
+      <button class="btn btn-outline btn-block mt-1" onclick="shareGuide()">Copy Share Link</button>
+    </div>
+  </section>
+
+  <!-- ════════ PRICING ════════ -->
+  <section id="page-pricing" class="page">
+    <div class="text-center mb-2">
+      <h2>Choose Your Reading Journey</h2>
+      <p style="font-size:0.9rem;color:var(--text-light)">Every great book club starts with the right plan.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3 style="color:var(--brown)">Free</h3>
+        <div class="price">$0</div>
+        <p style="font-size:0.8rem;color:var(--text-light)" class="ui-text">For curious readers</p>
+        <ul>
+          <li>1 book club</li>
+          <li>1 active book at a time</li>
+          <li>Basic discussion guide</li>
+          <li>Reading schedule builder</li>
+          <li>Community discussion board</li>
+        </ul>
+        <button class="btn btn-outline btn-block">Current Plan</button>
+      </div>
+      <div class="pricing-card featured">
+        <span class="badge">Most Popular</span>
+        <h3 style="color:var(--green)">Reader</h3>
+        <div class="price">$7.99<span>/mo</span></div>
+        <p style="font-size:0.8rem;color:var(--text-light)" class="ui-text">For avid readers</p>
+        <ul>
+          <li>3 book clubs</li>
+          <li>Unlimited active books</li>
+          <li>Full AI discussion guides</li>
+          <li>Character deep dives</li>
+          <li>Theme analysis</li>
+          <li>Companion read suggestions</li>
+          <li>Annotations &amp; highlights</li>
+        </ul>
+        <button class="btn btn-primary btn-block">Upgrade to Reader</button>
+      </div>
+      <div class="pricing-card">
+        <h3 style="color:var(--burgundy)">Organizer</h3>
+        <div class="price">$19.99<span>/mo</span></div>
+        <p style="font-size:0.8rem;color:var(--text-light)" class="ui-text">For club leaders</p>
+        <ul>
+          <li>Unlimited book clubs</li>
+          <li>Everything in Reader</li>
+          <li>Meeting scheduler</li>
+          <li>Calendar export (.ics)</li>
+          <li>API access</li>
+          <li>Priority AI generation</li>
+          <li>Custom branding</li>
+          <li>Analytics dashboard</li>
+        </ul>
+        <button class="btn btn-accent btn-block">Upgrade to Organizer</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══════════════════════════════════════════
+     BOTTOM NAVIGATION
+     ═══════════════════════════════════════════ -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-page="page-home" onclick="navigate('page-home', this)">
+    <span>&#127968;</span>
+    <span class="nav-label">Home</span>
+  </button>
+  <button class="nav-btn" data-page="page-guide" onclick="navigate('page-guide', this)">
+    <span>&#129302;</span>
+    <span class="nav-label">Guide</span>
+  </button>
+  <button class="nav-btn" data-page="page-schedule" onclick="navigate('page-schedule', this)">
+    <span>&#128197;</span>
+    <span class="nav-label">Schedule</span>
+  </button>
+  <button class="nav-btn" data-page="page-clubs" onclick="navigate('page-clubs', this)">
+    <span>&#128101;</span>
+    <span class="nav-label">Clubs</span>
+  </button>
+  <button class="nav-btn" data-page="page-social" onclick="navigate('page-social', this)">
+    <span>&#128172;</span>
+    <span class="nav-label">Social</span>
+  </button>
+  <button class="nav-btn" data-page="page-pricing" onclick="navigate('page-pricing', this)">
+    <span>&#11088;</span>
+    <span class="nav-label">Plans</span>
+  </button>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     MODAL
+     ═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TOAST
+     ═══════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   BookClubs Application Logic
+   ═══════════════════════════════════════════════════════════════ */
+
+// ─── Built-In Book Library (20 Books) ─────────────────────────
+const BOOK_LIBRARY = [
+  { title:"Pride and Prejudice", author:"Jane Austen", pages:279, chapters:61, genre:"Classic Romance", color:"#8b1a1a",
+    synopsis:"The story follows Elizabeth Bennet as she navigates issues of manners, morality, education, and marriage in early 19th-century England. Her complex relationship with the proud Mr. Darcy forms the emotional core of this beloved novel about overcoming first impressions."},
+  { title:"To Kill a Mockingbird", author:"Harper Lee", pages:281, chapters:31, genre:"American Classic", color:"#2d5016",
+    synopsis:"Set in the American South during the 1930s, young Scout Finch watches her father Atticus defend a Black man wrongly accused of a crime. Through Scout's innocent eyes, we confront prejudice, justice, and the loss of childhood innocence in a deeply divided community."},
+  { title:"1984", author:"George Orwell", pages:328, chapters:23, genre:"Dystopian Fiction", color:"#333",
+    synopsis:"In a totalitarian society ruled by Big Brother, Winston Smith works rewriting history at the Ministry of Truth. His secret rebellion against the Party and forbidden love affair lead him into the terrifying machinery of thought control and surveillance."},
+  { title:"The Great Gatsby", author:"F. Scott Fitzgerald", pages:180, chapters:9, genre:"American Classic", color:"#c8a951",
+    synopsis:"Narrator Nick Carraway recounts the summer of 1922 when he becomes entangled in the world of his mysterious millionaire neighbor Jay Gatsby, whose obsessive pursuit of the beautiful Daisy Buchanan ends in tragedy. A meditation on the American Dream and its corruption."},
+  { title:"Beloved", author:"Toni Morrison", pages:324, chapters:28, genre:"Literary Fiction", color:"#5c3d2e",
+    synopsis:"Former slave Sethe lives in a house haunted by the ghost of her baby daughter. When a mysterious young woman named Beloved appears, she forces Sethe to confront the unspeakable trauma of her past. A searing exploration of slavery's psychological legacy."},
+  { title:"One Hundred Years of Solitude", author:"Gabriel Garcia Marquez", pages:417, chapters:20, genre:"Magical Realism", color:"#2d5016",
+    synopsis:"The epic tale of the Buendia family across seven generations in the mythical town of Macondo. Blending the magical and mundane, it chronicles love, war, revolution, and fate in a sweeping narrative that captures the soul of Latin America."},
+  { title:"The Handmaid's Tale", author:"Margaret Atwood", pages:311, chapters:46, genre:"Dystopian Fiction", color:"#8b1a1a",
+    synopsis:"In the theocratic Republic of Gilead, Offred serves as a Handmaid forced to bear children for the ruling class. Through her eyes, we witness a society built on religious extremism, patriarchal control, and the erasure of women's autonomy."},
+  { title:"Frankenstein", author:"Mary Shelley", pages:280, chapters:24, genre:"Gothic Horror", color:"#3e2518",
+    synopsis:"Victor Frankenstein, a young scientist, creates a sentient creature in an unorthodox experiment. Rejected by society and his creator, the creature seeks revenge, raising profound questions about creation, responsibility, and what it means to be human."},
+  { title:"The Alchemist", author:"Paulo Coelho", pages:197, chapters:14, genre:"Philosophical Fiction", color:"#c8a951",
+    synopsis:"Santiago, a young Andalusian shepherd, embarks on a journey to find a treasure buried near the Egyptian pyramids. Along the way, he learns to read omens, speak the Language of the World, and discover his Personal Legend."},
+  { title:"Dune", author:"Frank Herbert", pages:688, chapters:48, genre:"Science Fiction", color:"#c8a951",
+    synopsis:"On the desert planet Arrakis, young Paul Atreides finds himself at the nexus of political intrigue, ecological struggle, and a messianic prophecy. Control of the spice melange — the most valuable substance in the universe — drives empires to war."},
+  { title:"The Kite Runner", author:"Khaled Hosseini", pages:371, chapters:25, genre:"Literary Fiction", color:"#7a5a4a",
+    synopsis:"Amir, a well-to-do boy from Kabul, and Hassan, the son of his father's servant, share a bond that is shattered by a cowardly act of betrayal. Years later, Amir returns to a Taliban-controlled Afghanistan seeking redemption."},
+  { title:"Where the Crawdads Sing", author:"Delia Owens", pages:368, chapters:56, genre:"Mystery/Literary Fiction", color:"#2d5016",
+    synopsis:"Abandoned by her family, Kya Clark raises herself in the marshes of North Carolina. Known as the Marsh Girl, she becomes a suspect in a murder investigation while a coming-of-age story of resilience and connection to the natural world unfolds."},
+  { title:"Circe", author:"Madeline Miller", pages:393, chapters:27, genre:"Mythological Fiction", color:"#5c3d2e",
+    synopsis:"Born the daughter of the Titan sun god Helios, Circe discovers she possesses the power of witchcraft. Banished to a deserted island, she hones her craft, encounters legendary figures of mythology, and must choose between the gods and mortals."},
+  { title:"The Song of Achilles", author:"Madeline Miller", pages:378, chapters:33, genre:"Mythological Fiction", color:"#8b1a1a",
+    synopsis:"Patroclus, an awkward prince, is exiled to the court of King Peleus where he meets Achilles. Their bond deepens as Achilles becomes the greatest warrior of his generation, and the Trojan War threatens to destroy everything they share."},
+  { title:"Project Hail Mary", author:"Andy Weir", pages:476, chapters:36, genre:"Science Fiction", color:"#333",
+    synopsis:"Ryland Grace wakes alone on a spaceship with no memory of who he is or why he is there. As memories return, he realizes he is humanity's last hope — sent to solve an extinction-level threat to Earth with the help of an unlikely alien ally."},
+  { title:"Educated", author:"Tara Westover", pages:334, chapters:40, genre:"Memoir", color:"#7a5a4a",
+    synopsis:"Born to survivalists in rural Idaho, Tara Westover had no formal education. Through sheer determination she taught herself enough to gain admission to Brigham Young University, eventually earning a PhD from Cambridge — while grappling with family loyalty and self-invention."},
+  { title:"The Midnight Library", author:"Matt Haig", pages:288, chapters:52, genre:"Contemporary Fiction", color:"#2d5016",
+    synopsis:"Between life and death, Nora Seed finds a library containing books that allow her to live alternate versions of her life. Each book represents a different choice she might have made, as she searches for the life that would have made her truly happy."},
+  { title:"Klara and the Sun", author:"Kazuo Ishiguro", pages:307, chapters:24, genre:"Literary Science Fiction", color:"#c8a951",
+    synopsis:"Klara, an Artificial Friend with extraordinary observational powers, watches customers from her store shelf. When she is chosen by a teenage girl, she witnesses the complexities of human relationships and contemplates what it means to love and be loved."},
+  { title:"The House in the Cerulean Sea", author:"TJ Klune", pages:396, chapters:29, genre:"Fantasy", color:"#4a7a2e",
+    synopsis:"Linus Baker is a caseworker at the Department in Charge of Magical Youth. Sent to evaluate an orphanage housing six dangerous magical children, he discovers a world of wonder, acceptance, and the true meaning of family on a remote island."},
+  { title:"Anxious People", author:"Fredrik Backman", pages:341, chapters:63, genre:"Contemporary Fiction", color:"#5c3d2e",
+    synopsis:"A failed bank robber accidentally takes a group of strangers hostage during an apartment open house. As police negotiate outside, the hostages' stories interweave in this warmhearted comedy about the messiness of being human and the unexpected bonds we form."}
+];
+
+// ─── Application State ────────────────────────────────────────
+let state = {
+  currentBook: null,
+  clubs: [],
+  activeClubId: null,
+  posts: [],
+  annotations: [],
+  pollOptions: [],
+  schedule: [],
+  aiCache: {},
+  readingHistory: []
+};
+
+// ─── LocalStorage Persistence ─────────────────────────────────
+function saveState() {
+  try {
+    localStorage.setItem('bookclubs_state', JSON.stringify(state));
+  } catch(e) { console.warn('Storage save failed:', e); }
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('bookclubs_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+    }
+  } catch(e) { console.warn('Storage load failed:', e); }
+}
+
+// ─── Toast Notification ───────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── Modal ────────────────────────────────────────────────────
+function showModal(html) {
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+// ─── Navigation ───────────────────────────────────────────────
+function navigate(pageId, btnEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  if (btnEl) btnEl.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ─── Tab System ───────────────────────────────────────────────
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('tab-btn')) {
+    const tabId = e.target.dataset.tab;
+    const container = e.target.closest('.card') || e.target.closest('section');
+    container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    e.target.classList.add('active');
+    const target = document.getElementById(tabId);
+    if (target) target.classList.add('active');
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// LIBRARY GRID RENDERING
+// ═══════════════════════════════════════════════════════════════
+function renderLibrary() {
+  const grid = document.getElementById('libraryGrid');
+  grid.innerHTML = BOOK_LIBRARY.map((book, i) => `
+    <div class="book-card" onclick="selectLibraryBook(${i})" id="libcard-${i}">
+      <div class="book-spine" style="background:${book.color}">${book.title.charAt(0)}</div>
+      <div class="title">${book.title}</div>
+      <div class="author">${book.author}</div>
+      <span class="chip chip-green" style="margin-top:0.2rem">${book.genre}</span>
+    </div>
+  `).join('');
+}
+
+function selectLibraryBook(index) {
+  const book = BOOK_LIBRARY[index];
+  document.getElementById('bookTitle').value = book.title;
+  document.getElementById('bookAuthor').value = book.author;
+  document.getElementById('bookPages').value = book.pages;
+  document.getElementById('bookChapters').value = book.chapters;
+  document.getElementById('bookSynopsis').value = book.synopsis;
+
+  document.querySelectorAll('.book-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('libcard-' + index).classList.add('selected');
+  showToast('Loaded: ' + book.title);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BOOK SETUP
+// ═══════════════════════════════════════════════════════════════
+function setupBook() {
+  const title = document.getElementById('bookTitle').value.trim();
+  const author = document.getElementById('bookAuthor').value.trim();
+  const pages = parseInt(document.getElementById('bookPages').value) || 300;
+  const chapters = parseInt(document.getElementById('bookChapters').value) || 20;
+  const weeks = parseInt(document.getElementById('bookWeeks').value) || 4;
+  const synopsis = document.getElementById('bookSynopsis').value.trim();
+
+  if (!title) { showToast('Please enter a book title'); return; }
+
+  state.currentBook = { title, author, pages, chapters, weeks, synopsis, setupDate: new Date().toISOString() };
+  state.aiCache = {};
+  saveState();
+
+  updateBookInfoDisplays();
+  showToast('"' + title + '" is ready!');
+  navigate('page-guide', document.querySelector('[data-page="page-guide"]'));
+}
+
+function updateBookInfoDisplays() {
+  const b = state.currentBook;
+  if (!b) return;
+  const info = `<strong>${b.title}</strong> by ${b.author} &mdash; ${b.pages} pages, ${b.chapters} chapters`;
+  document.getElementById('guideBookInfo').innerHTML = info;
+  document.getElementById('scheduleBookInfo').innerHTML = info;
+  document.getElementById('socialBookInfo').innerHTML = 'Discussing: <strong>' + b.title + '</strong> by ' + b.author;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AI DISCUSSION GUIDE GENERATION
+// ═══════════════════════════════════════════════════════════════
+const AI_PROMPTS = {
+  questions: (b) => `Generate 6-8 thought-provoking book club discussion questions for "${b.title}" by ${b.author}. ${b.synopsis ? 'Synopsis: ' + b.synopsis : ''} Include questions about themes, character motivations, pivotal scenes, and personal connections. Number each question. Make them open-ended and encourage deep discussion.`,
+  themes: (b) => `Analyze the major themes in "${b.title}" by ${b.author}. ${b.synopsis ? 'Synopsis: ' + b.synopsis : ''} Identify 4-6 central themes, provide textual evidence or examples for each, and explain their significance. Format with clear headings for each theme.`,
+  characters: (b) => `Provide a deep character analysis for "${b.title}" by ${b.author}. ${b.synopsis ? 'Synopsis: ' + b.synopsis : ''} Cover the main characters' motivations, character arcs, key relationships, and symbolic significance. Discuss how characters change throughout the story.`,
+  context: (b) => `Provide historical and biographical context for "${b.title}" by ${b.author}. ${b.synopsis ? 'Synopsis: ' + b.synopsis : ''} Include: the author's background and what inspired the work, the historical period it was written in and set in, its cultural impact and reception, and any controversies or interesting publication history.`,
+  companion: (b) => `Suggest 5-7 companion reads for someone who enjoyed "${b.title}" by ${b.author}. ${b.synopsis ? 'Synopsis: ' + b.synopsis : ''} For each suggestion include the title, author, and a brief explanation of why it pairs well. Consider thematic similarities, writing style, and complementary perspectives.`,
+  adaptations: (b) => `Describe any movie, TV, or stage adaptations of "${b.title}" by ${b.author}. Include the year, director/showrunner, key cast members, and how faithful the adaptation is to the source material. Note any significant changes from the book. If no adaptations exist, suggest what kind of adaptation would work well and who might direct/star in it.`
+};
+
+// Keyword-based fallback responses for offline use
+const FALLBACK_RESPONSES = {
+  questions: (b) => `Discussion Questions for "${b.title}" by ${b.author}
+
+1. What was your initial reaction to the opening of the book? How did it set the tone for the rest of the story?
+
+2. Which character did you most identify with, and why? Did that change as the story progressed?
+
+3. What do you think is the central conflict of the novel? Is it internal, external, or both?
+
+4. Were there any moments that surprised you or challenged your expectations? How did the author achieve this effect?
+
+5. How does the setting influence the characters and plot? Could this story take place anywhere else?
+
+6. What themes resonated most with you personally? How do they connect to our contemporary world?
+
+7. If you could ask the author one question about this book, what would it be?
+
+8. Would you recommend this book to a friend? What kind of reader would most enjoy it?`,
+
+  themes: (b) => `Theme Analysis: "${b.title}" by ${b.author}
+
+IDENTITY AND SELF-DISCOVERY
+The novel explores how characters come to understand themselves through the challenges they face. The journey of self-knowledge is central to the narrative arc.
+
+POWER AND ITS CONSEQUENCES
+Questions of who holds power, how it is wielded, and what happens when it shifts form a crucial thematic thread throughout the work.
+
+LOVE AND HUMAN CONNECTION
+The various relationships in the story -- romantic, familial, and platonic -- illuminate what it means to truly connect with another person.
+
+SOCIETY AND THE INDIVIDUAL
+The tension between conforming to social expectations and following one's own moral compass drives much of the character development.
+
+MEMORY AND THE PAST
+How characters reckon with their histories, both personal and collective, shapes their present choices and future possibilities.`,
+
+  characters: (b) => `Character Analysis: "${b.title}" by ${b.author}
+
+PROTAGONIST
+The central character undergoes significant transformation throughout the narrative. Their initial worldview is challenged and ultimately reshaped by the events of the story. Key relationships serve as catalysts for growth, and their internal conflicts mirror the external challenges they face.
+
+CHARACTER RELATIONSHIPS
+The dynamics between characters reveal the author's deeper thematic concerns. Alliances shift, loyalties are tested, and the complexity of human connection is explored through both dialogue and action.
+
+CHARACTER ARCS
+The most compelling character development occurs through moments of crisis and decision. Pay attention to how characters' choices reflect their values and how those values evolve.
+
+SYMBOLIC SIGNIFICANCE
+Several characters serve as representatives of larger ideas or social forces. Their interactions create a rich tapestry of meaning that rewards careful reading.`,
+
+  context: (b) => `Author & Historical Context: "${b.title}" by ${b.author}
+
+ABOUT THE AUTHOR
+${b.author} wrote this work drawing on personal experience, cultural observation, and literary tradition. Their background significantly influenced the themes and perspectives presented in the novel.
+
+HISTORICAL PERIOD
+The work reflects the social and cultural conditions of its time, while also speaking to universal human concerns that transcend any particular era.
+
+LITERARY SIGNIFICANCE
+"${b.title}" has earned its place in literary discussions through its distinctive voice, innovative narrative techniques, and profound exploration of the human condition.
+
+CULTURAL IMPACT
+Since its publication, the work has influenced readers, writers, and cultural conversations. Its themes continue to resonate with new generations of readers.`,
+
+  companion: (b) => `Companion Reads for "${b.title}" by ${b.author}
+
+If you enjoyed this book, consider exploring these related works:
+
+1. Look for other works by ${b.author} to deepen your understanding of their themes and style.
+
+2. Explore books in the same genre that tackle similar questions from different perspectives.
+
+3. Consider reading literary criticism or essays about this work to enrich your understanding.
+
+4. Seek out works from the same historical period to understand the cultural context better.
+
+5. Find books that the author has cited as influences on their own writing.
+
+6. Look for contemporary novels that engage with the same themes in a modern context.
+
+(Personalized recommendations powered by PhotonicMind AI.)`,
+
+  adaptations: (b) => `Adaptations of "${b.title}" by ${b.author}
+
+Many beloved books have been adapted for screen and stage. Check online databases such as IMDb for the most current information about adaptations of this work.
+
+When comparing any adaptation to its source material, consider:
+- What scenes or subplots were necessarily cut for time?
+- How does the visual medium change the experience of internal monologue?
+- Does the casting match your mental image of the characters?
+- What does the adaptation emphasize differently than the book?
+
+(Detailed adaptation information powered by PhotonicMind AI.)`
+};
+
+async function generateAI(type) {
+  const b = state.currentBook;
+  if (!b) { showToast('Set up a book first'); return; }
+
+  const responseEl = document.getElementById('ai-' + type);
+  responseEl.classList.remove('hidden');
+  responseEl.innerHTML = '<span class="loading-dots">Generating</span>';
+
+  // Check cache
+  const cacheKey = b.title + '_' + type;
+  if (state.aiCache[cacheKey]) {
+    responseEl.innerHTML = state.aiCache[cacheKey];
+    return;
+  }
+
+  const prompt = AI_PROMPTS[type](b);
+
+  try {
+    const response = await fetch('https://vision.mobleysoft.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (localStorage.getItem('pm_token') || '')
+      },
+      body: JSON.stringify({
+        model: 'photonic-mind-v1',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 1500
+      }),
+      signal: AbortSignal.timeout(60000)
+    });
+
+    if (!response.ok) throw new Error('PhotonicMind request failed');
+
+    const data = await response.json();
+    let text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+
+    // Strip <think>...</think> blocks from the response
+    text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
+    // Format the response
+    text = formatAIResponse(text);
+    state.aiCache[cacheKey] = text;
+    saveState();
+    responseEl.innerHTML = text;
+  } catch (err) {
+    console.warn('AI generation failed, using fallback:', err.message);
+    const fallback = FALLBACK_RESPONSES[type](b);
+    const formatted = formatAIResponse(fallback);
+    state.aiCache[cacheKey] = formatted;
+    saveState();
+    responseEl.innerHTML = formatted;
+  }
+}
+
+function formatAIResponse(text) {
+  // Basic markdown-like formatting
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  text = text.replace(/^### (.+)$/gm, '<h4>$1</h4>');
+  text = text.replace(/^## (.+)$/gm, '<h3>$1</h3>');
+  text = text.replace(/^# (.+)$/gm, '<h3>$1</h3>');
+  // Lines that are all caps and at least 3 words -> heading
+  text = text.replace(/^([A-Z][A-Z &']+[A-Z])$/gm, '<h4>$1</h4>');
+  return text;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// READING SCHEDULE BUILDER
+// ═══════════════════════════════════════════════════════════════
+function generateSchedule() {
+  const b = state.currentBook;
+  if (!b) { showToast('Set up a book first'); return; }
+
+  const meetingDayIdx = parseInt(document.getElementById('meetingDay').value);
+  const startDateVal = document.getElementById('startDate').value;
+  const pace = document.getElementById('pace').value;
+  const weeks = b.weeks || 4;
+
+  let startDate;
+  if (startDateVal) {
+    startDate = new Date(startDateVal + 'T12:00:00');
+  } else {
+    startDate = new Date();
+    // Advance to next meeting day
+    while (startDate.getDay() !== meetingDayIdx) {
+      startDate.setDate(startDate.getDate() + 1);
+    }
+  }
+
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const meetingDayName = dayNames[meetingDayIdx];
+  const totalPages = b.pages;
+  const totalChapters = b.chapters;
+
+  // Calculate distribution based on pace
+  let distribution = [];
+  if (pace === 'relaxed') {
+    // Even distribution with lighter first week
+    const base = Math.floor(totalChapters / weeks);
+    const firstWeek = Math.max(1, base - 1);
+    let remaining = totalChapters - firstWeek;
+    distribution.push(firstWeek);
+    for (let i = 1; i < weeks; i++) {
+      const chunk = Math.ceil(remaining / (weeks - i));
+      distribution.push(chunk);
+      remaining -= chunk;
+    }
+  } else if (pace === 'intensive') {
+    // Front-loaded
+    const extra = Math.ceil(totalChapters * 0.15);
+    const base = Math.floor((totalChapters - extra) / weeks);
+    let remaining = totalChapters;
+    for (let i = 0; i < weeks; i++) {
+      const chunk = i === 0 ? base + extra : Math.ceil(remaining / (weeks - i));
+      const actual = Math.min(chunk, remaining);
+      distribution.push(actual);
+      remaining -= actual;
+    }
+  } else {
+    // Moderate: even split
+    let remaining = totalChapters;
+    for (let i = 0; i < weeks; i++) {
+      const chunk = Math.ceil(remaining / (weeks - i));
+      distribution.push(chunk);
+      remaining -= chunk;
+    }
+  }
+
+  // Build schedule entries
+  state.schedule = [];
+  let chapterStart = 1;
+  let pageStart = 1;
+  const pagesPerChapter = Math.round(totalPages / totalChapters);
+
+  for (let w = 0; w < weeks; w++) {
+    const meetDate = new Date(startDate);
+    meetDate.setDate(meetDate.getDate() + (w * 7));
+    // Advance to meeting day
+    while (meetDate.getDay() !== meetingDayIdx) {
+      meetDate.setDate(meetDate.getDate() + 1);
+    }
+
+    const chapCount = distribution[w] || 0;
+    const chapterEnd = Math.min(chapterStart + chapCount - 1, totalChapters);
+    const pageEnd = Math.min(pageStart + (chapCount * pagesPerChapter) - 1, totalPages);
+
+    state.schedule.push({
+      week: w + 1,
+      date: meetDate.toISOString(),
+      dayName: meetingDayName,
+      chapterStart: chapterStart,
+      chapterEnd: chapterEnd,
+      pageStart: pageStart,
+      pageEnd: pageEnd
+    });
+
+    chapterStart = chapterEnd + 1;
+    pageStart = pageEnd + 1;
+  }
+
+  saveState();
+  renderScheduleList();
+  showToast('Schedule created for ' + weeks + ' weeks!');
+}
+
+function renderScheduleList() {
+  const container = document.getElementById('scheduleList');
+  if (!state.schedule.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128197;</div><p>No schedule yet. Build one above!</p></div>';
+    return;
+  }
+
+  container.innerHTML = state.schedule.map(s => {
+    const d = new Date(s.date);
+    const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return `
+      <div class="schedule-week">
+        <div class="week-number">${s.week}</div>
+        <div class="week-details">
+          <div class="date ui-text">${dateStr} &mdash; ${s.dayName}</div>
+          <div class="assignment">Chapters ${s.chapterStart}${s.chapterEnd !== s.chapterStart ? '&ndash;' + s.chapterEnd : ''}</div>
+          <div class="date ui-text">Pages ${s.pageStart}&ndash;${s.pageEnd} (${s.pageEnd - s.pageStart + 1} pages)</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─── Calendar View ────────────────────────────────────────────
+let calViewVisible = false;
+function toggleCalView() {
+  calViewVisible = !calViewVisible;
+  const calEl = document.getElementById('calendarView');
+  const listEl = document.getElementById('scheduleList');
+  const btn = document.getElementById('calViewBtn');
+
+  if (calViewVisible) {
+    calEl.classList.remove('hidden');
+    listEl.classList.add('hidden');
+    btn.textContent = 'List';
+    renderCalendar();
+  } else {
+    calEl.classList.add('hidden');
+    listEl.classList.remove('hidden');
+    btn.textContent = 'Calendar';
+  }
+}
+
+function renderCalendar() {
+  if (!state.schedule.length) return;
+  const container = document.getElementById('calendarView');
+  const firstDate = new Date(state.schedule[0].date);
+  const lastDate = new Date(state.schedule[state.schedule.length - 1].date);
+  const monthStart = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+  const monthEnd = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, 0);
+
+  const meetingDates = new Set(state.schedule.map(s => new Date(s.date).toDateString()));
+  const meetingMap = {};
+  state.schedule.forEach(s => { meetingMap[new Date(s.date).toDateString()] = s; });
+
+  let html = '<div class="calendar-grid">';
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  days.forEach(d => { html += `<div class="cal-header">${d}</div>`; });
+
+  // Fill empties for first week
+  const startDay = monthStart.getDay();
+  for (let i = 0; i < startDay; i++) { html += '<div class="cal-day empty"></div>'; }
+
+  let current = new Date(monthStart);
+  while (current <= monthEnd) {
+    const ds = current.toDateString();
+    const isMeeting = meetingDates.has(ds);
+    let cls = 'cal-day';
+    let label = '';
+    if (isMeeting) {
+      cls += ' meeting';
+      label = 'Wk ' + meetingMap[ds].week;
+    } else if (current >= firstDate && current <= lastDate) {
+      cls += ' reading';
+    }
+    html += `<div class="${cls}"><span class="cal-num">${current.getDate()}</span>${label ? '<span class="cal-label">' + label + '</span>' : ''}</div>`;
+    current.setDate(current.getDate() + 1);
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ─── ICS Export ───────────────────────────────────────────────
+function exportICS() {
+  if (!state.schedule.length || !state.currentBook) {
+    showToast('Generate a schedule first');
+    return;
+  }
+
+  const b = state.currentBook;
+  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//BookClubs//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n';
+
+  state.schedule.forEach(s => {
+    const d = new Date(s.date);
+    const dateStr = formatICSDate(d);
+    const nextDay = new Date(d);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const endStr = formatICSDate(nextDay);
+    const uid = 'bookclubs-' + b.title.replace(/\s/g,'') + '-week' + s.week + '@bookclubs.com';
+    const summary = `Book Club: ${b.title} - Week ${s.week}`;
+    const desc = `Read chapters ${s.chapterStart}-${s.chapterEnd} (pages ${s.pageStart}-${s.pageEnd})`;
+
+    ics += 'BEGIN:VEVENT\r\n';
+    ics += `DTSTART;VALUE=DATE:${dateStr}\r\n`;
+    ics += `DTEND;VALUE=DATE:${endStr}\r\n`;
+    ics += `SUMMARY:${summary}\r\n`;
+    ics += `DESCRIPTION:${desc}\r\n`;
+    ics += `UID:${uid}\r\n`;
+    ics += 'END:VEVENT\r\n';
+  });
+
+  ics += 'END:VCALENDAR\r\n';
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = b.title.replace(/\s+/g, '_') + '_reading_schedule.ics';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Calendar file downloaded!');
+}
+
+function formatICSDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}${m}${day}`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CLUB MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+function showCreateClubModal() {
+  showModal(`
+    <h3 style="margin-bottom:0.8rem">Create a New Book Club</h3>
+    <div class="form-group">
+      <label>Club Name</label>
+      <input type="text" id="newClubName" placeholder="e.g., The Page Turners">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="newClubDesc" placeholder="What kind of books does your club enjoy?" rows="3"></textarea>
+    </div>
+    <div class="flex-row" style="justify-content:flex-end;gap:0.5rem;margin-top:1rem">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createClub()">Create Club</button>
+    </div>
+  `);
+}
+
+function createClub() {
+  const name = document.getElementById('newClubName').value.trim();
+  const desc = document.getElementById('newClubDesc').value.trim();
+  if (!name) { showToast('Enter a club name'); return; }
+
+  const club = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    name: name,
+    description: desc,
+    members: [],
+    notes: [],
+    rating: 0,
+    history: [],
+    currentBook: state.currentBook ? { ...state.currentBook } : null,
+    createdAt: new Date().toISOString()
+  };
+
+  state.clubs.push(club);
+  saveState();
+  closeModal();
+  renderClubsList();
+  showToast('Club "' + name + '" created!');
+}
+
+function renderClubsList() {
+  const container = document.getElementById('clubsList');
+  if (!state.clubs.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128218;</div><p>No clubs yet. Create your first book club!</p></div>';
+    return;
+  }
+
+  const colors = ['#8b1a1a','#2d5016','#5c3d2e','#c8a951','#333','#7a5a4a'];
+  container.innerHTML = state.clubs.map((club, i) => `
+    <div class="card" style="cursor:pointer;border-left:4px solid ${colors[i % colors.length]}" onclick="openClub('${club.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div>
+          <h3 style="margin-bottom:0.2rem">${club.name}</h3>
+          <p style="font-size:0.8rem;color:var(--text-light);margin:0" class="ui-text">${club.description || 'No description'}</p>
+          <div class="flex-row gap-sm mt-1">
+            <span class="chip chip-green">${club.members.length} members</span>
+            <span class="chip chip-brown">${club.history.length} books read</span>
+            ${club.currentBook ? '<span class="chip chip-burgundy">Reading: ' + club.currentBook.title + '</span>' : ''}
+          </div>
+        </div>
+        <button class="btn btn-small btn-outline" onclick="event.stopPropagation();deleteClub('${club.id}')" title="Delete">&times;</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function deleteClub(id) {
+  if (!confirm('Delete this club? This cannot be undone.')) return;
+  state.clubs = state.clubs.filter(c => c.id !== id);
+  state.activeClubId = null;
+  saveState();
+  renderClubsList();
+  document.getElementById('clubDetail').classList.add('hidden');
+  showToast('Club deleted');
+}
+
+function openClub(id) {
+  const club = state.clubs.find(c => c.id === id);
+  if (!club) return;
+  state.activeClubId = id;
+  document.getElementById('clubDetailName').textContent = club.name;
+  document.getElementById('clubDetail').classList.remove('hidden');
+
+  // Sync current book
+  if (state.currentBook && (!club.currentBook || club.currentBook.title !== state.currentBook.title)) {
+    club.currentBook = { ...state.currentBook };
+    saveState();
+  }
+
+  renderMembers();
+  renderNotes();
+  renderRating();
+  renderHistory();
+}
+
+function getActiveClub() {
+  return state.clubs.find(c => c.id === state.activeClubId);
+}
+
+// ─── Members ──────────────────────────────────────────────────
+function addMember() {
+  const club = getActiveClub();
+  if (!club) return;
+  const name = document.getElementById('newMemberName').value.trim();
+  if (!name) return;
+
+  const avatarColors = ['#8b1a1a','#2d5016','#5c3d2e','#c8a951','#4a7a2e','#333','#7a5a4a'];
+  club.members.push({
+    name: name,
+    color: avatarColors[club.members.length % avatarColors.length],
+    progress: 0,
+    joinedAt: new Date().toISOString()
+  });
+  document.getElementById('newMemberName').value = '';
+  saveState();
+  renderMembers();
+  showToast(name + ' added!');
+}
+
+function renderMembers() {
+  const club = getActiveClub();
+  if (!club) return;
+  const container = document.getElementById('membersList');
+
+  if (!club.members.length) {
+    container.innerHTML = '<p class="ui-text" style="font-size:0.85rem;color:var(--text-light)">No members yet.</p>';
+    return;
+  }
+
+  container.innerHTML = club.members.map((m, i) => `
+    <div class="member-item">
+      <div class="member-avatar" style="background:${m.color}">${m.name.charAt(0).toUpperCase()}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:0.88rem">${m.name}</div>
+        <div class="ui-text" style="font-size:0.7rem;color:var(--text-light)">${m.progress}% complete</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${m.progress}%"></div></div>
+      <input type="range" min="0" max="100" value="${m.progress}" style="width:60px;accent-color:var(--green)"
+        onchange="updateProgress(${i}, this.value)">
+      <button class="btn btn-small" style="color:var(--burgundy);background:none;font-size:1rem;padding:0 0.3rem"
+        onclick="removeMember(${i})">&times;</button>
+    </div>
+  `).join('');
+}
+
+function updateProgress(idx, val) {
+  const club = getActiveClub();
+  if (!club) return;
+  club.members[idx].progress = parseInt(val);
+  saveState();
+  renderMembers();
+}
+
+function removeMember(idx) {
+  const club = getActiveClub();
+  if (!club) return;
+  club.members.splice(idx, 1);
+  saveState();
+  renderMembers();
+}
+
+// ─── Meeting Notes ────────────────────────────────────────────
+function saveMeetingNote() {
+  const club = getActiveClub();
+  if (!club) return;
+  const date = document.getElementById('noteDate').value || new Date().toISOString().split('T')[0];
+  const content = document.getElementById('noteContent').value.trim();
+  if (!content) { showToast('Write some notes first'); return; }
+
+  club.notes.unshift({
+    date: date,
+    content: content,
+    book: state.currentBook ? state.currentBook.title : 'Unknown',
+    createdAt: new Date().toISOString()
+  });
+
+  document.getElementById('noteContent').value = '';
+  saveState();
+  renderNotes();
+  showToast('Note saved!');
+}
+
+function renderNotes() {
+  const club = getActiveClub();
+  if (!club) return;
+  const container = document.getElementById('notesList');
+
+  if (!club.notes.length) {
+    container.innerHTML = '<p class="ui-text" style="font-size:0.85rem;color:var(--text-light)">No meeting notes yet.</p>';
+    return;
+  }
+
+  container.innerHTML = club.notes.map((n, i) => {
+    const d = new Date(n.date + 'T12:00:00');
+    return `
+      <div class="meeting-note">
+        <div class="meeting-date">${d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'})} &mdash; ${n.book}</div>
+        <p style="font-size:0.88rem;margin-top:0.3rem;white-space:pre-wrap">${n.content}</p>
+        <button class="btn btn-small" style="color:var(--burgundy);background:none;font-size:0.7rem;padding:0.2rem 0;margin-top:0.3rem"
+          onclick="deleteNote(${i})">Delete</button>
+      </div>`;
+  }).join('');
+}
+
+function deleteNote(idx) {
+  const club = getActiveClub();
+  if (!club) return;
+  club.notes.splice(idx, 1);
+  saveState();
+  renderNotes();
+}
+
+// ─── Ratings ──────────────────────────────────────────────────
+function renderRating() {
+  const club = getActiveClub();
+  if (!club) return;
+  const stars = document.querySelectorAll('#ratingStars .star');
+  stars.forEach(s => {
+    const val = parseInt(s.dataset.val);
+    s.classList.toggle('filled', val <= (club.rating || 0));
+    s.onclick = () => {
+      club.rating = val;
+      saveState();
+      renderRating();
+      showToast('Rated ' + val + ' stars!');
+    };
+  });
+  const label = club.rating ? club.rating + ' out of 5 stars' : 'Not rated yet';
+  document.getElementById('currentRating').textContent = label;
+}
+
+// ─── Reading History ──────────────────────────────────────────
+function markBookComplete() {
+  const club = getActiveClub();
+  if (!club || !club.currentBook) { showToast('No active book to mark complete'); return; }
+
+  club.history.push({
+    title: club.currentBook.title,
+    author: club.currentBook.author,
+    rating: club.rating || 0,
+    completedAt: new Date().toISOString()
+  });
+
+  club.rating = 0;
+  club.currentBook = null;
+  saveState();
+  renderHistory();
+  renderRating();
+  renderClubsList();
+  showToast('Book marked as complete!');
+}
+
+function renderHistory() {
+  const club = getActiveClub();
+  if (!club) return;
+  const container = document.getElementById('historyList');
+
+  if (!club.history.length) {
+    container.innerHTML = '<p class="ui-text" style="font-size:0.85rem;color:var(--text-light)">No books completed yet.</p>';
+    return;
+  }
+
+  container.innerHTML = club.history.map(h => {
+    const d = new Date(h.completedAt);
+    const stars = h.rating ? ' &mdash; ' + '&#9733;'.repeat(h.rating) + '&#9734;'.repeat(5 - h.rating) : '';
+    return `
+      <div class="history-item">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:0.9rem">${h.title}</div>
+          <div class="ui-text" style="font-size:0.75rem;color:var(--text-light)">${h.author} &mdash; ${d.toLocaleDateString('en-US', {month:'short', year:'numeric'})}${stars}</div>
+        </div>
+        <span class="finished-badge">Finished</span>
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SOCIAL FEATURES
+// ═══════════════════════════════════════════════════════════════
+function addPost() {
+  const author = document.getElementById('postAuthor').value.trim() || 'Anonymous Reader';
+  const body = document.getElementById('postBody').value.trim();
+  if (!body) { showToast('Write something to share!'); return; }
+
+  const bookKey = state.currentBook ? state.currentBook.title : 'general';
+  state.posts.unshift({
+    author: author,
+    body: body,
+    book: bookKey,
+    time: new Date().toISOString()
+  });
+
+  document.getElementById('postBody').value = '';
+  saveState();
+  renderPosts();
+  showToast('Posted!');
+}
+
+function renderPosts() {
+  const container = document.getElementById('postsList');
+  const bookKey = state.currentBook ? state.currentBook.title : 'general';
+  const bookPosts = state.posts.filter(p => p.book === bookKey);
+
+  if (!bookPosts.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128172;</div><p>No discussion posts yet. Start the conversation!</p></div>';
+    return;
+  }
+
+  container.innerHTML = bookPosts.map(p => {
+    const d = new Date(p.time);
+    const timeStr = d.toLocaleDateString('en-US', {month:'short', day:'numeric'}) + ' at ' + d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+    return `
+      <div class="post">
+        <div class="flex-row" style="justify-content:space-between">
+          <span class="post-author">${p.author}</span>
+          <span class="post-time">${timeStr}</span>
+        </div>
+        <div class="post-body">${p.body}</div>
+      </div>`;
+  }).join('');
+}
+
+// ─── Annotations ──────────────────────────────────────────────
+function addAnnotation() {
+  const passage = document.getElementById('annotPassage').value.trim();
+  const note = document.getElementById('annotNote').value.trim();
+  if (!passage) { showToast('Enter a passage to annotate'); return; }
+
+  state.annotations.unshift({
+    passage: passage,
+    note: note || '',
+    book: state.currentBook ? state.currentBook.title : 'Unknown',
+    time: new Date().toISOString()
+  });
+
+  document.getElementById('annotPassage').value = '';
+  document.getElementById('annotNote').value = '';
+  saveState();
+  renderAnnotations();
+  showToast('Annotation saved!');
+}
+
+function renderAnnotations() {
+  const container = document.getElementById('annotationsList');
+  const bookKey = state.currentBook ? state.currentBook.title : 'Unknown';
+  const bookAnnot = state.annotations.filter(a => a.book === bookKey);
+
+  if (!bookAnnot.length) {
+    container.innerHTML = '<p class="ui-text" style="font-size:0.85rem;color:var(--text-light)">No annotations yet for this book.</p>';
+    return;
+  }
+
+  container.innerHTML = bookAnnot.map(a => `
+    <div class="annotation">
+      <div class="passage">"${a.passage}"</div>
+      ${a.note ? '<div class="note">' + a.note + '</div>' : ''}
+    </div>
+  `).join('');
+}
+
+// ─── Poll / Voting ────────────────────────────────────────────
+function addPollOption() {
+  const title = document.getElementById('pollOption').value.trim();
+  if (!title) return;
+
+  // Prevent duplicates
+  if (state.pollOptions.find(o => o.title.toLowerCase() === title.toLowerCase())) {
+    showToast('Already in the poll');
+    return;
+  }
+
+  state.pollOptions.push({ title: title, votes: 0 });
+  document.getElementById('pollOption').value = '';
+  saveState();
+  renderPoll();
+}
+
+function votePoll(idx) {
+  state.pollOptions[idx].votes++;
+  saveState();
+  renderPoll();
+  showToast('Vote counted!');
+}
+
+function renderPoll() {
+  const container = document.getElementById('pollOptions');
+  if (!state.pollOptions.length) {
+    container.innerHTML = '<p class="ui-text" style="font-size:0.85rem;color:var(--text-light)">Add book options for your next read!</p>';
+    return;
+  }
+
+  const totalVotes = state.pollOptions.reduce((s, o) => s + o.votes, 0) || 1;
+
+  container.innerHTML = state.pollOptions.map((opt, i) => {
+    const pct = Math.round((opt.votes / totalVotes) * 100);
+    return `
+      <div class="poll-option" onclick="votePoll(${i})">
+        <div style="min-width:90px;font-size:0.82rem;font-weight:600">${opt.title}</div>
+        <div class="poll-bar-bg"><div class="poll-bar-fill" style="width:${pct}%"></div></div>
+        <span class="poll-pct">${opt.votes}v</span>
+        <button class="btn btn-small" style="background:none;color:var(--burgundy);padding:0.1rem 0.3rem;font-size:0.9rem"
+          onclick="event.stopPropagation();removePollOption(${i})">&times;</button>
+      </div>`;
+  }).join('');
+}
+
+function removePollOption(idx) {
+  state.pollOptions.splice(idx, 1);
+  saveState();
+  renderPoll();
+}
+
+// ─── Share Guide ──────────────────────────────────────────────
+function shareGuide() {
+  if (!state.currentBook) { showToast('Set up a book first'); return; }
+  const data = {
+    book: state.currentBook,
+    generated: Object.keys(state.aiCache).length > 0
+  };
+  const encoded = btoa(JSON.stringify(data));
+  const url = window.location.origin + window.location.pathname + '?guide=' + encoded;
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('Share link copied!'));
+  } else {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Share link copied!');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════════════════════
+function init() {
+  loadState();
+
+  // Set default start date
+  const today = new Date();
+  document.getElementById('startDate').value = today.toISOString().split('T')[0];
+  document.getElementById('noteDate').value = today.toISOString().split('T')[0];
+
+  // Render library
+  renderLibrary();
+
+  // Restore current book display
+  if (state.currentBook) {
+    document.getElementById('bookTitle').value = state.currentBook.title || '';
+    document.getElementById('bookAuthor').value = state.currentBook.author || '';
+    document.getElementById('bookPages').value = state.currentBook.pages || '';
+    document.getElementById('bookChapters').value = state.currentBook.chapters || '';
+    document.getElementById('bookSynopsis').value = state.currentBook.synopsis || '';
+    document.getElementById('bookWeeks').value = state.currentBook.weeks || 4;
+    updateBookInfoDisplays();
+  }
+
+  // Restore cached AI responses
+  if (state.aiCache) {
+    Object.keys(state.aiCache).forEach(key => {
+      const type = key.split('_').pop();
+      const el = document.getElementById('ai-' + type);
+      if (el && state.aiCache[key]) {
+        el.classList.remove('hidden');
+        el.innerHTML = state.aiCache[key];
+      }
+    });
+  }
+
+  // Render persistent data
+  renderClubsList();
+  renderPosts();
+  renderAnnotations();
+  renderPoll();
+  if (state.schedule.length) renderScheduleList();
+
+  // Check for shared guide in URL
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('guide')) {
+    try {
+      const data = JSON.parse(atob(params.get('guide')));
+      if (data.book) {
+        state.currentBook = data.book;
+        saveState();
+        updateBookInfoDisplays();
+        showToast('Loaded shared guide for "' + data.book.title + '"');
+      }
+    } catch(e) { /* ignore bad data */ }
+  }
+}
+
+// Run on DOM ready
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<!-- AuthFor SDK -->
+<script src="https://authfor.com/sdk/v1/authfor.min.js"></script>
+<!-- VendyAI Payments -->
+<script src="https://vendyai.com/sdk/v1/vendyai.min.js"></script>
+<!-- MailGuyAI Email -->
+<script src="https://mailguyai.com/sdk/v1/mailguyai.min.js"></script>
+
+</div><!-- /mascom-content-overlay -->
+<script id="mascom-overlay-js">
+(function(){
+  var overlay = document.getElementById('mascom-content-overlay');
+  if (!overlay) return;
+  var idleTimer = null;
+  var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+  function showUI() {
+    overlay.classList.add('visible');
+    resetIdleTimer();
+  }
+  function hideUI() {
+    overlay.classList.remove('visible');
+  }
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    if (!isMobile) {
+      idleTimer = setTimeout(hideUI, 12000);
+    }
+  }
+
+  document.addEventListener('mousemove', showUI);
+  document.addEventListener('click', showUI);
+  document.addEventListener('keypress', showUI);
+  document.addEventListener('touchstart', showUI);
+  if (overlay) overlay.addEventListener('scroll', resetIdleTimer);
+
+  // Initial reveal after brief delay to let universe render first
+  setTimeout(showUI, isMobile ? 100 : 1200);
+})();
+</script>
+<!-- MASCOM Conglomerate Nav -->
+<div id="mascom-nav" style="position:fixed;bottom:0;left:0;right:0;height:32px;background:#0a0e14;border-top:1px solid rgba(70,130,180, 0.65);display:flex;align-items:center;padding:0 12px;font-family:Inter,system-ui,sans-serif;font-size:11px;z-index:99999;gap:8px;opacity:0.85;transition:opacity 0.2s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.85'">
+<span style="color:#4682B4;font-weight:600;letter-spacing:1px;font-size:10px">MASCOM</span>
+<a href="https://mobleysoft.com" style="color:#888;text-decoration:none;padding:2px 6px;border-radius:3px" onmouseenter="this.style.color='#c8c8d4'" onmouseleave="this.style.color='#888'">PublicOS</a>
+<a href="https://weylandai.com" style="color:#888;text-decoration:none;padding:2px 6px;border-radius:3px" onmouseenter="this.style.color='#c8c8d4'" onmouseleave="this.style.color='#888'">WeylandAI</a>
+<a href="https://gamegob.com" style="color:#888;text-decoration:none;padding:2px 6px;border-radius:3px" onmouseenter="this.style.color='#c8c8d4'" onmouseleave="this.style.color='#888'">GameGob</a>
+<a href="https://helmcorp.cc" style="color:#888;text-decoration:none;padding:2px 6px;border-radius:3px" onmouseenter="this.style.color='#c8c8d4'" onmouseleave="this.style.color='#888'">HelmCorp</a>
+<a href="https://filmline.cc" style="color:#888;text-decoration:none;padding:2px 6px;border-radius:3px" onmouseenter="this.style.color='#c8c8d4'" onmouseleave="this.style.color='#888'">FilmLine</a>
+<a href="https://halside.com" style="color:#888;text-decoration:none;padding:2px 6px;border-radius:3px" onmouseenter="this.style.color='#c8c8d4'" onmouseleave="this.style.color='#888'">HALside</a>
+<a href="https://mobleyreport.com/news" style="color:#888;text-decoration:none;padding:2px 6px;border-radius:3px" onmouseenter="this.style.color='#c8c8d4'" onmouseleave="this.style.color='#888'">News</a>
+<span style="flex:1"></span>
+<a href="https://authfor.com" style="color:#666;text-decoration:none;font-size:10px">AuthFor</a>
+</div>
+<!-- HelmCorp Analytics -->
+<script>(function(){var v='bookclubs_cc';fetch('https://helmcorp.cc/api/beacon',{method:'POST',body:JSON.stringify({v:v,p:location.pathname,t:Date.now()}),headers:{'Content-Type':'application/json'},keepalive:true}).catch(function(){})})()</script>
+<!-- VentureForge:collated -->
 </body>
 </html>
