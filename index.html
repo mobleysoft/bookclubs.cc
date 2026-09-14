@@ -2344,13 +2344,20 @@ function removePollOption(idx) {
 }
 
 // ─── Share Guide ──────────────────────────────────────────────
+function utf8ToB64(str) {
+  return btoa(String.fromCharCode(...new TextEncoder().encode(str)));
+}
+function b64ToUtf8(str) {
+  return new TextDecoder().decode(Uint8Array.from(atob(str), c => c.charCodeAt(0)));
+}
 function shareGuide() {
   if (!state.currentBook) { showToast('Set up a book first'); return; }
   const data = {
     book: state.currentBook,
-    generated: Object.keys(state.aiCache).length > 0
+    schedule: state.schedule,
+    pollOptions: state.pollOptions
   };
-  const encoded = btoa(JSON.stringify(data));
+  const encoded = utf8ToB64(JSON.stringify(data));
   const url = window.location.origin + window.location.pathname + '?guide=' + encoded;
 
   if (navigator.clipboard) {
@@ -2415,9 +2422,17 @@ function init() {
   const params = new URLSearchParams(window.location.search);
   if (params.has('guide')) {
     try {
-      const data = JSON.parse(atob(params.get('guide')));
+      const data = JSON.parse(b64ToUtf8(params.get('guide')));
       if (data.book) {
         state.currentBook = data.book;
+        if (Array.isArray(data.schedule) && data.schedule.length) {
+          state.schedule = data.schedule;
+          renderScheduleList();
+        }
+        if (Array.isArray(data.pollOptions) && data.pollOptions.length) {
+          state.pollOptions = data.pollOptions;
+          renderPoll();
+        }
         saveState();
         updateBookInfoDisplays();
         showToast('Loaded shared guide for "' + data.book.title + '"');
