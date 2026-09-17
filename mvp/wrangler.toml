@@ -1,0 +1,11 @@
+name = "bookclubs-cc"
+compatibility_date = "2026-09-17"
+pages_build_output_dir = "."
+
+# Same shared D1 database every other venture in this portfolio uses
+# (venture_mvp_db, Account A) - book_club_members table created 2026-09-17,
+# scoped by venture='bookclubs.cc' same as every other multi-tenant table.
+[[d1_databases]]
+binding = "DB"
+database_name = "venture_mvp_db"
+database_id = "971d6c5d-ad04-424f-98c9-b3f46a482f96"
