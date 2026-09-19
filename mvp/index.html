@@ -47,7 +47,13 @@
 
   <div class="panel">
     <h2>Member Roster</h2>
+    <p class="sub">Shared with everyone who has this club's code -- stored on the server, not just this browser.</p>
     <div>
+      <input id="clubCode" type="text" placeholder="Club code (make one up and share it with your club)" style="width:280px" />
+      <button id="loadClubBtn">Load / switch club</button>
+    </div>
+    <div id="clubMsg" class="msg"></div>
+    <div style="margin-top:10px;">
       <input id="memberName" type="text" placeholder="Member name" style="width:160px" />
       <input id="memberAvail" type="text" placeholder="Available days, comma-separated (e.g. tuesday, thursday)" style="width:280px" />
       <button id="addMemberBtn">Add member</button>
@@ -67,10 +73,7 @@
   <script src="club-tools.js"></script>
   <script>
     const CT = window.ClubTools;
-    const STORAGE_ROSTER = 'bookclubs_mvp_roster';
-
-    function loadRoster() { return JSON.parse(localStorage.getItem(STORAGE_ROSTER) || '[]'); }
-    function saveRoster(r) { localStorage.setItem(STORAGE_ROSTER, JSON.stringify(r)); }
+    const STORAGE_CLUB = 'bookclubs_mvp_club_code';
 
     document.getElementById('generateBtn').addEventListener('click', () => {
       const title = document.getElementById('bookTitle').value.trim();
@@ -89,45 +92,92 @@
       });
     });
 
-    function renderRoster() {
-      const roster = loadRoster();
-      const body = document.getElementById('rosterBody');
-      body.innerHTML = '';
-      roster.forEach((m) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${m.name}</td><td>${m.availability.join(', ') || '-'}</td>`;
-        body.appendChild(tr);
-      });
+    function getSavedClubCode() { return localStorage.getItem(STORAGE_CLUB) || ''; }
+    function saveClubCode(code) { localStorage.setItem(STORAGE_CLUB, code); }
 
-      const matches = CT.matchMembersByAvailability(roster);
-      const matchBody = document.getElementById('matchBody');
-      matchBody.innerHTML = '';
-      matches.forEach((m) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${m.day}</td><td>${m.members.join(', ')}</td><td>${m.count}</td>`;
-        matchBody.appendChild(tr);
+    function addRow(tbody, cells) {
+      const tr = document.createElement('tr');
+      cells.forEach((text) => {
+        const td = document.createElement('td');
+        td.textContent = text;
+        tr.appendChild(td);
       });
+      tbody.appendChild(tr);
     }
 
-    document.getElementById('addMemberBtn').addEventListener('click', () => {
+    function renderRosterData(data) {
+      const body = document.getElementById('rosterBody');
+      body.innerHTML = '';
+      data.roster.forEach((m) => addRow(body, [m.name, m.availability.join(', ') || '-']));
+
+      const matchBody = document.getElementById('matchBody');
+      matchBody.innerHTML = '';
+      data.matches.forEach((m) => addRow(matchBody, [m.day, m.members.join(', '), String(m.count)]));
+    }
+
+    async function loadClub(code, { silent } = {}) {
+      const msgEl = document.getElementById('clubMsg');
+      if (!code) return;
+      try {
+        const res = await fetch(`/api/bookclubs/roster?club_code=${encodeURIComponent(code)}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail?.message || 'failed to load roster');
+        renderRosterData(data);
+        if (!silent) {
+          msgEl.textContent = `Loaded "${code}" (${data.roster.length} member${data.roster.length === 1 ? '' : 's'}).`;
+        }
+      } catch (err) {
+        msgEl.textContent = `Could not load club: ${err.message}`;
+      }
+    }
+
+    document.getElementById('loadClubBtn').addEventListener('click', () => {
+      const code = document.getElementById('clubCode').value.trim();
+      const msgEl = document.getElementById('clubMsg');
+      if (!code) { msgEl.textContent = 'Enter a club code first.'; return; }
+      saveClubCode(code);
+      loadClub(code);
+    });
+
+    document.getElementById('addMemberBtn').addEventListener('click', async () => {
+      const code = document.getElementById('clubCode').value.trim();
       const name = document.getElementById('memberName').value.trim();
       const availRaw = document.getElementById('memberAvail').value;
       const availability = availRaw.split(',').map((s) => s.trim()).filter(Boolean);
       const msgEl = document.getElementById('memberMsg');
-      const roster = loadRoster();
-      const result = CT.addMember(roster, { name, availability });
-      if (!result.ok) {
-        msgEl.textContent = `Could not add member: ${result.reason}`;
-        return;
+      if (!code) { msgEl.textContent = 'Enter a club code above first.'; return; }
+      if (!name) { msgEl.textContent = 'Member name required.'; return; }
+      saveClubCode(code);
+      try {
+        const res = await fetch('/api/bookclubs/roster', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ club_code: code, name, availability }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          msgEl.textContent = data.reason === 'duplicate member'
+            ? `${name} is already on this roster.`
+            : (data.detail?.message || 'Could not add member.');
+          return;
+        }
+        msgEl.textContent = `Added ${name}.`;
+        document.getElementById('memberName').value = '';
+        document.getElementById('memberAvail').value = '';
+        await loadClub(code, { silent: true });
+      } catch (err) {
+        msgEl.textContent = `Network error: ${err.message}`;
       }
-      saveRoster(result.roster);
-      msgEl.textContent = `Added ${name}.`;
-      document.getElementById('memberName').value = '';
-      document.getElementById('memberAvail').value = '';
-      renderRoster();
     });
 
-    renderRoster();
+    (function init() {
+      const codeInput = document.getElementById('clubCode');
+      const existing = getSavedClubCode();
+      if (existing) {
+        codeInput.value = existing;
+        loadClub(existing, { silent: true });
+      }
+    })();
   </script>
 </body>
 </html>
