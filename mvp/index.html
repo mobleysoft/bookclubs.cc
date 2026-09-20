@@ -70,6 +70,16 @@
     </table>
   </div>
 
+  <div class="panel">
+    <h2>Store Plan -- $29/mo</h2>
+    <p class="sub">For an independent bookstore running this tool for its own book club. One click, hosted checkout.</p>
+    <div>
+      <input id="storeEmail" type="email" placeholder="Store email" style="width:220px" />
+      <button id="subscribeBtn">Subscribe</button>
+    </div>
+    <div id="subscribeMsg" class="msg"></div>
+  </div>
+
   <script src="club-tools.js"></script>
   <script>
     const CT = window.ClubTools;
@@ -165,6 +175,25 @@
         document.getElementById('memberName').value = '';
         document.getElementById('memberAvail').value = '';
         await loadClub(code, { silent: true });
+      } catch (err) {
+        msgEl.textContent = `Network error: ${err.message}`;
+      }
+    });
+
+    document.getElementById('subscribeBtn').addEventListener('click', async () => {
+      const email = document.getElementById('storeEmail').value.trim();
+      const msgEl = document.getElementById('subscribeMsg');
+      if (!email) { msgEl.textContent = 'Enter your store email first.'; return; }
+      msgEl.textContent = 'Starting checkout...';
+      try {
+        const res = await fetch('/api/bookclubs/checkout', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ customer_email: email }),
+        });
+        const data = await res.json();
+        if (!res.ok) { msgEl.textContent = data.detail?.message || 'Could not start checkout.'; return; }
+        window.location.href = data.checkout_url;
       } catch (err) {
         msgEl.textContent = `Network error: ${err.message}`;
       }
