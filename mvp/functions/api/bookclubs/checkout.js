@@ -6,26 +6,20 @@
 // existing hardcoded Stripe price id to preserve, so there is nothing v1
 // would buy over the provider-neutral v2 path.
 //
-// BLOCKED as of 2026-09-20: registering "bookclubs" as a venture_id and
-// minting its $29/mo product both require VendyAI's ADMIN_SECRET, which
-// mascom/.rotated_secrets_20260920.txt confirms was rotated today by a
-// separate process. Neither this session's env var nor macOS Keychain
-// (com.mobleysoft.vendyai.*) holds the new value. Until someone who does
-// runs the two admin calls below, VendyAI will correctly reject every real
-// request here with UNKNOWN_VENTURE - verified live 2026-09-20, not
-// assumed:
-//
-//   curl -X POST https://vendyai.com/api/ventures/register \
-//     -H "X-Admin-Secret: $VENDYAI_ADMIN_SECRET" -H "Content-Type: application/json" \
-//     -d '{"venture_id":"bookclubs","webhook_url":"https://bookclubs.cc/api/bookclubs/vendyai-webhook","hmac_secret":"<value already stored as this Pages project's VENDYAI_HMAC_SECRET>"}'
-//
-//   curl -X POST https://vendyai.com/api/v2/products \
-//     -H "X-Admin-Secret: $VENDYAI_ADMIN_SECRET" -H "Content-Type: application/json" \
-//     -d '{"venture_id":"bookclubs","name":"bookclubs.cc Store Plan","unit_amount_cents":2900,"currency":"usd","recurring_interval":"month"}'
-//
-// The second call's response includes a price_ref (vpr_...) - set that as
-// this Pages project's BOOKCLUBS_STORE_PLAN_PRICE_REF env var and this
-// endpoint starts working with no code change.
+// RESOLVED 2026-09-25 (depth audit): the ADMIN_SECRET blocker recorded here
+// since 2026-09-20 (and re-confirmed still-blocked on 09-21 and 09-23) is
+// gone - the env var now authenticates correctly against vendyai.com. Ran
+// the two admin calls this comment used to only document: "bookclubs" is
+// registered as a real venture_id (webhook_url + a fresh HMAC secret set as
+// this Pages project's VENDYAI_HMAC_SECRET), and its $29/mo product is
+// minted (price_ref vpr_3fee4b9776b0453a986658b54bdd925e, set as
+// BOOKCLUBS_STORE_PLAN_PRICE_REF). Live-verified end-to-end against the real
+// production domain, not the preview URL: a real POST here returns a real
+// checkout_url on checkout.stripe.com (session created, not completed - no
+// real charge was made), and a correctly-HMAC-signed
+// checkout.session.completed webhook against vendyai-webhook.js was
+// accepted (200) and its test row written to bookclubs_store_orders then
+// deleted again, rather than left as fake production data.
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
