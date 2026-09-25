@@ -206,6 +206,24 @@
         codeInput.value = existing;
         loadClub(existing, { silent: true });
       }
+
+      // checkout.js's success_url/cancel_url redirect back here with this
+      // param - without reading it, a customer who just paid (or backed
+      // out of paying) lands back on a silent, unchanged form.
+      const params = new URLSearchParams(window.location.search);
+      const checkoutStatus = params.get('checkout');
+      if (checkoutStatus === 'success') {
+        document.getElementById('subscribeMsg').textContent =
+          "Subscription started - thank you! A receipt is on its way from Stripe.";
+      } else if (checkoutStatus === 'cancelled') {
+        document.getElementById('subscribeMsg').textContent =
+          'Checkout was cancelled - no charge was made.';
+      }
+      if (checkoutStatus) {
+        params.delete('checkout');
+        const cleanUrl = window.location.pathname + (params.toString() ? `?${params}` : '');
+        window.history.replaceState({}, '', cleanUrl);
+      }
     })();
   </script>
 </body>
